@@ -44,6 +44,11 @@ SoftwareSerial mySerial(2, 3);
 #include <avr/wdt.h>
 volatile int f_wdt=1;
 
+//storage variables
+int previous_temperature = 0;
+int previous_humidity = 0;
+int previous_light = 0;
+
 void setup(void)
 {
   mySerial.begin(19200);
@@ -112,36 +117,42 @@ void loop(void)
 
 //  Serial.println(analogRead(7));
   //if full, turn on green light & set water level to full
-  if (highVal > 200 && lowVal > 200) 
-  {
-    Serial.println("high");
-    digitalWrite(4, LOW);
-    digitalWrite(5, HIGH);
-    digitalWrite(6, LOW);
-    waterLevel = "full";
-  }
-  
-  //if medium, turn on blue light & set water level to ok
-  if (highVal < 200 && lowVal > 200) 
-  {
-    Serial.println("medium");
-    digitalWrite(4, LOW);
-    digitalWrite(5, LOW);
-    digitalWrite(6, HIGH);
-    waterLevel = "OK";
-  }
-  
-  
-  //if low, turn on red light & set water level to low
-  if (highVal < 200 && lowVal < 200) 
-  {
-    Serial.println("low");
-    digitalWrite(4, HIGH);
-    digitalWrite(5, LOW);
-    digitalWrite(6, LOW);
-    waterLevel = "low";
-  }
-  
+//  if (highVal > 200 && lowVal > 200) 
+//  {
+//    Serial.println("high");
+//    digitalWrite(4, LOW);
+//    digitalWrite(5, HIGH);
+//    digitalWrite(6, LOW);
+//    waterLevel = "full";
+//    delay(500);
+//    digitalWrite(5, LOW);
+//  }
+//  
+//  //if medium, turn on blue light & set water level to ok
+//  if (highVal < 200 && lowVal > 200) 
+//  {
+//    Serial.println("medium");
+//    digitalWrite(4, LOW);
+//    digitalWrite(5, LOW);
+//    digitalWrite(6, HIGH);
+//    waterLevel = "OK";
+//    delay(500);
+//    digitalWrite(6, LOW);
+//  }
+//  
+//  
+//  //if low, turn on red light & set water level to low
+//  if (highVal < 200 && lowVal < 200) 
+//  {
+//    Serial.println("low");
+//    digitalWrite(4, HIGH);
+//    digitalWrite(5, LOW);
+//    digitalWrite(6, LOW);
+//    waterLevel = "low";
+//    delay(500);
+//    digitalWrite(4,LOW);
+//  }
+//  
   
   digitalWrite(highCtrl, LOW);
   digitalWrite(lowCtrl, LOW);
@@ -152,37 +163,59 @@ void loop(void)
   delay(1000);
   int temperature = (int) t;
   int humidity = (int) h;
+  
   if (temperature != 0){
-    Serial.println(temperature);
+    if (temperature != previous_temperature){
+      Serial.println(temperature);
+      previous_temperature = temperature;
+    }
   }
+  
   if (humidity != 0){
-    Serial.println(humidity);
+    if (humidity != previous_humidity) {
+      Serial.println(humidity);
+      previous_humidity = humidity;
+    }
   }
+  
   String temp = "|Temperature, " + (String)temperature + "~";
   Serial.println(temp);
-  if (temperature != 0) {
-    mySerial.println(temp);
-  } 
+  if (temperature != 0){
+    if (temperature != previous_temperature){
+      mySerial.println(temperature);
+      previous_temperature = temperature;
+    }
+  }
+  
   String humid = "|Humidity, " + (String)humidity + "~";
   Serial.println(humid);
   if (humidity != 0){
-    mySerial.println(humid);
+    if (humidity != previous_humidity) {
+      mySerial.println(humidity);
+      previous_humidity = humidity;
+    }
   }
-  String moist = "|waterLevel, " + (String)waterLevel + "~";
-  Serial.println(moist);
-  mySerial.println(moist);
   
-  //moisture level
-  Serial.println(moistureVal);
-  String moisture = "|Moisture, " + (String)moistureVal + "~";
-  Serial.println(moisture);
-  mySerial.println(moisture);
+//  String moist = "|waterLevel, " + (String)waterLevel + "~";
+//  Serial.println(moist);
+//  mySerial.println(moist);
+//  
+//  //moisture level
+//  Serial.println(moistureVal);
+//  String moisture = "|Moisture, " + (String)moistureVal + "~";
+//  Serial.println(moisture);
+//  mySerial.println(moisture);
   
   //light
   Serial.println(lightVal);
   String light = "|Light, " + (String)lightVal + "~";
-  Serial.println(light);
-  mySerial.println(light);
+  if(light !=0) {
+    if(lightVal != previous_light) {
+      Serial.println(light);
+      mySerial.println(light);
+      previous_light = lightVal;
+    }
+  }
   
   
   if (sleep == true)
